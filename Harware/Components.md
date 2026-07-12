@@ -1,6 +1,6 @@
 #Hardware Components List
 ---
--**Main Controller**: <u>ESP32 Development Board<u> (used for data processing and wireless communication).    
+-**Main Controller**: ESP32 Development Board(used for data processing and wireless communication).    
 
 -**Pressure Sensing**: 4x Force Sensing Resistors (FSR) for plantar pressure mapping. 
 
