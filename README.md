@@ -13,8 +13,8 @@ A wearable healthcare system designed to **detect the early signs of diabetic fo
 
 ## 🛠 Hardware
 
-* 5 × Pressure Sensors
-* 2 × Temperature Sensors
+* Pressure Sensors
+* Temperature Sensors
 * Microcontroller (ESP32/Arduino)
 * Smart Insole
 * Rechargeable Battery
