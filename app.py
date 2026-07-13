@@ -1,40 +1,46 @@
-import streamlit as st
-import pandas as pd
-import requests
-import time
+from fastapi import FastAPI
+from pydantic import BaseModel
+import sqlite3
 
-API_URL = "https://YOUR_BACKEND_URL.onrender.com/data" 
+app = FastAPI()
 
-st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
-st.title("🥾 Smart Footwear: Real-Time Monitoring")
+DB_NAME = "sensor_data.db"
 
-placeholder = st.empty()
+# Create table if it doesn't exist
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    conn.execute("""CREATE TABLE IF NOT EXISTS readings (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                    fsr1 REAL, fsr2 REAL, fsr3 REAL, fsr4 REAL, temp1 REAL)""")
+    conn.commit()
+    conn.close()
 
-while True:
-    try:
-        response = requests.get(API_URL, timeout=5)
-        if response.status_code == 200:
-            data = response.json()
-            df = pd.DataFrame(data)
-            
-            if not df.empty:
-                with placeholder.container():
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.subheader("Pressure Trend (FSRs)")
-                        st.line_chart(df[['fsr1', 'fsr2', 'fsr3', 'fsr4']])
-                    with col2:
-                        st.subheader("Temperature Trend")
-                        st.line_chart(df[['temp1']])
-                    
-                    st.subheader("Latest Entries")
-                    st.dataframe(df.head(10))
-            else:
-                st.warning("No data yet.")
-        else:
-            st.error("Backend error.")
-    except Exception as e:
-        st.error(f"Connection error: {e}")
-    
-    time.sleep(5)
-    st.rerun()
+init_db()
+
+class SensorData(BaseModel):
+    fsr1: float
+    fsr2: float
+    fsr3: float
+    fsr4: float
+    temp1: float
+
+@app.post("/log")
+def log_data(data: SensorData):
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO readings (fsr1, fsr2, fsr3, fsr4, temp1) VALUES (?,?,?,?,?)",
+                   (data.fsr1, data.fsr2, data.fsr3, data.fsr4, data.temp1))
+    # Keep only the last 1000 entries
+    cursor.execute("DELETE FROM readings WHERE id <= (SELECT MAX(id) - 1000 FROM readings)")
+    conn.commit()
+    conn.close()
+    return {"status": "success"}
+
+@app.get("/data")
+def get_data():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.execute("SELECT fsr1, fsr2, fsr3, fsr4, temp1 FROM readings ORDER BY id DESC LIMIT 100")
+    rows = cursor.fetchall()
+    conn.close()
+    # Format for DataFrame
+    return [{"fsr1": r[0], "fsr2": r[1], "fsr3": r[2], "fsr4": r[3], "temp1": r[4]} for r in rows]
