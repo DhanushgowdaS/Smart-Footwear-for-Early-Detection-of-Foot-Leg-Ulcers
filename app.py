@@ -5,7 +5,7 @@ import time
 
 # --- CONFIGURATION ---
 # Replace with your actual Render/Backend URL
-API_URL = "YOUR_BACKEND_API_URL_HERE/data" 
+API_URL = "https://your-backend-service.onrender.com/data"
 
 st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
 
