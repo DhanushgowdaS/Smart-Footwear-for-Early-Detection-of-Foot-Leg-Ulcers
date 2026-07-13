@@ -1,46 +1,60 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-import sqlite3
+import streamlit as st
+import pandas as pd
+import requests
+import time
 
-app = FastAPI()
+# --- CONFIGURATION ---
+API_URL = "https://smart-footwear-api.onrender.com/data"
 
-DB_NAME = "sensor_data.db"
+st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
+st.title("🥾 Smart Footwear: Real-Time Monitoring")
 
-# Create table if it doesn't exist
-def init_db():
-    conn = sqlite3.connect(DB_NAME)
-    conn.execute("""CREATE TABLE IF NOT EXISTS readings (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                    fsr1 REAL, fsr2 REAL, fsr3 REAL, fsr4 REAL, temp1 REAL)""")
-    conn.commit()
-    conn.close()
+# --- DASHBOARD LAYOUT ---
+placeholder = st.empty()
 
-init_db()
-
-class SensorData(BaseModel):
-    fsr1: float
-    fsr2: float
-    fsr3: float
-    fsr4: float
-    temp1: float
-
-@app.post("/log")
-def log_data(data: SensorData):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO readings (fsr1, fsr2, fsr3, fsr4, temp1) VALUES (?,?,?,?,?)",
-                   (data.fsr1, data.fsr2, data.fsr3, data.fsr4, data.temp1))
-    # Keep only the last 1000 entries
-    cursor.execute("DELETE FROM readings WHERE id <= (SELECT MAX(id) - 1000 FROM readings)")
-    conn.commit()
-    conn.close()
-    return {"status": "success"}
-
-@app.get("/data")
-def get_data():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.execute("SELECT fsr1, fsr2, fsr3, fsr4, temp1 FROM readings ORDER BY id DESC LIMIT 100")
-    rows = cursor.fetchall()
-    conn.close()
-    # Format for DataFrame
-    return [{"fsr1": r[0], "fsr2": r[1], "fsr3": r[2], "fsr4": r[3], "temp1": r[4]} for r in rows]
+while True:
+    try:
+        # Request data from backend
+        response = requests.get(API_URL, timeout=10)
+        
+        with placeholder.container():
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Check if data is valid and not empty
+                if isinstance(data, list) and len(data) > 0:
+                    df = pd.DataFrame(data)
+                    
+                    # Ensure required columns exist before plotting
+                    fsr_cols = ['fsr1', 'fsr2', 'fsr3', 'fsr4']
+                    available_fsr = [c for c in fsr_cols if c in df.columns]
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        st.subheader("Pressure Trend (FSRs)")
+                        if available_fsr:
+                            st.line_chart(df[available_fsr])
+                        else:
+                            st.write("FSR data not available.")
+                            
+                    with col2:
+                        st.subheader("Temperature Trend")
+                        if 'temp1' in df.columns:
+                            st.line_chart(df[['temp1']])
+                        else:
+                            st.write("Temperature data not available.")
+                    
+                    st.subheader("Latest Entries")
+                    st.dataframe(df.head(10))
+                else:
+                    st.warning("Database is empty. Waiting for ESP32 data...")
+            else:
+                st.error(f"Backend API Error: {response.status_code}")
+                
+    except Exception as e:
+        st.error(f"Connection issue: {e}")
+        st.write("Check if your backend is running at: ", API_URL)
+    
+    time.sleep(5) # Refresh interval
+    st.rerun()
