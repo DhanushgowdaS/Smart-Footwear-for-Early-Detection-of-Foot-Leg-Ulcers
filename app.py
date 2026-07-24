@@ -1,71 +1,172 @@
-
 import streamlit as st
 import pandas as pd
 import requests
 from datetime import datetime
+import plotly.graph_objects as go
 
-API_BASE="https://smart-footwear-api.onrender.com"
-DATA_API=f"{API_BASE}/data"
-CSV_API=f"{API_BASE}/download_csv"
+st.set_page_config(
+    page_title="Smart Footwear Dashboard",
+    page_icon="🩺",
+    layout="wide"
+)
+st.markdown("""
+<style>
 
-st.set_page_config(page_title="Smart Footwear Dashboard",page_icon="🩺",layout="wide")
+html, body, [class*="css"]{
+    font-family:Arial, sans-serif;
+}
 
-st.title("🩺 Smart Footwear for Early Ulcer Detection")
-st.caption("AI Powered IoT Monitoring Dashboard")
+.stApp{
+    background:#081421;
+}
 
-st.write("**Server:**",API_BASE)
-st.write(datetime.now().strftime("%d %b %Y %H:%M:%S"))
+/* Main Title */
 
-if st.button("🔄 Refresh"):
-    st.rerun()
+.title{
+    text-align:center;
+    font-size:42px;
+    font-weight:bold;
+    color:white;
+    text-shadow:
+        0px 0px 10px #00BFFF,
+        0px 0px 20px #00BFFF,
+        0px 0px 40px #00BFFF;
+    animation: glow 2s infinite alternate;
+}
 
-try:
-    r=requests.get(DATA_API,timeout=10)
-    r.raise_for_status()
-    data=r.json()
-    if not data:
-        st.warning("Waiting for sensor data...")
-        st.stop()
+@keyframes glow{
 
-    df=pd.DataFrame(data)
-    df["timestamp"]=pd.to_datetime(df["timestamp"])
-    df=df.sort_values("timestamp")
-    latest=df.iloc[-1]
+from{
+text-shadow:
+0px 0px 5px #00BFFF;
+}
 
-    a,b,c,d,e=st.columns(5)
-    a.metric("FSR1",f"{latest['fsr1']:.0f}")
-    b.metric("FSR2",f"{latest['fsr2']:.0f}")
-    c.metric("FSR3",f"{latest['fsr3']:.0f}")
-    d.metric("FSR4",f"{latest['fsr4']:.0f}")
-    e.metric("Temperature",f"{latest['temp1']:.2f} °C")
+to{
+text-shadow:
+0px 0px 25px #00BFFF,
+0px 0px 50px #00BFFF;
+}
 
-    a,b,c,d=st.columns(4)
-    a.metric("Average",f"{latest['avg_pressure']:.2f}")
-    b.metric("Maximum",f"{latest['max_pressure']:.2f}")
-    c.metric("Scenario",latest["scenario"])
-    d.metric("Prediction",latest["prediction"])
+}
 
-    st.subheader("Pressure")
-    st.line_chart(df.set_index("timestamp")[["fsr1","fsr2","fsr3","fsr4"]],use_container_width=True)
+/* Card */
 
-    st.subheader("Temperature")
-    st.line_chart(df.set_index("timestamp")[["temp1"]],use_container_width=True)
+.card{
 
-    risk=latest["prediction"].lower()
-    if risk=="safe":
-        st.success(latest["prediction"])
-    elif risk=="low risk":
-        st.info(latest["prediction"])
-    elif risk=="medium risk":
-        st.warning(latest["prediction"])
-    else:
-        st.error(latest["prediction"])
+background:#122235;
 
-    df["Time"]=df["timestamp"].dt.strftime("%H:%M:%S")
-    st.dataframe(df[["Time","scenario","prediction","fsr1","fsr2","fsr3","fsr4","temp1","avg_pressure","max_pressure"]].tail(20),hide_index=True,use_container_width=True)
+padding:20px;
 
-    csv=requests.get(CSV_API).content
-    st.download_button("Download CSV",csv,file_name="dataset.csv",mime="text/csv")
+border-radius:15px;
 
-except Exception as e:
-    st.error(str(e))
+border:1px solid #1b4f72;
+
+box-shadow:0px 0px 15px rgba(0,191,255,0.25);
+
+}
+
+/* Refresh Button */
+
+.stButton>button{
+
+background:#008CFF;
+
+color:white;
+
+border:none;
+
+border-radius:10px;
+
+padding:12px 22px;
+
+font-size:18px;
+
+transition:0.3s;
+
+}
+
+.stButton>button:hover{
+
+transform:scale(1.10);
+
+background:#00BFFF;
+
+cursor:pointer;
+
+}
+
+/* Time */
+
+.time{
+
+text-align:right;
+
+font-size:18px;
+
+font-weight:bold;
+
+color:#D6EAF8;
+
+}
+
+/* Status Box */
+
+.status{
+
+background:#0D2B45;
+
+border-radius:15px;
+
+padding:25px;
+
+text-align:center;
+
+font-size:30px;
+
+font-weight:bold;
+
+color:white;
+
+box-shadow:0px 0px 20px rgba(0,191,255,.35);
+
+margin-top:20px;
+
+margin-bottom:20px;
+
+}
+
+</style>
+""", unsafe_allow_html=True)
+st.markdown(
+"""
+<div class='title'>
+🩺 SMART FOOTWEAR FOR EARLY ULCER DETECTION
+</div>
+""",
+unsafe_allow_html=True
+)
+left,right=st.columns([1,3])
+
+with left:
+
+    if st.button("🔄 Refresh"):
+
+        st.rerun()
+
+with right:
+
+    st.markdown(
+    f"<div class='time'>{datetime.now().strftime('%d %B %Y | %I:%M:%S %p')}</div>",
+    unsafe_allow_html=True
+    )
+    prediction="Waiting..."
+
+st.markdown(
+f"""
+<div class='status'>
+Prediction<br>
+{prediction}
+</div>
+""",
+unsafe_allow_html=True
+)
