@@ -64,11 +64,7 @@ html, body, [class*="css"]{
 
 }
 
-.stButton>button:hover{
-    transform:scale(1.10);
-    background:#00BFFF;
-    cursor:pointer;
-}
+
 
 /* Time */
 
@@ -83,15 +79,16 @@ html, body, [class*="css"]{
 /* Prediction Card */
 
 .status{
-    background:#0D2B45;
+    background:#102842;
     border-radius:18px;
-    padding:30px;
+    padding:45px;
     text-align:center;
-    font-size:30px;
-    font-weight:bold;
+    font-size:36px;
+    font-weight:700;
     color:white;
-    box-shadow:0px 0px 20px rgba(0,191,255,.35);
-    margin-top:35px;
+    box-shadow:0 0 30px rgba(0,191,255,.30);
+    margin-top:40px;
+    margin-bottom:30px;
 }
 
 </style>
@@ -124,7 +121,7 @@ with right:
 # -----------------------------
 # Prediction Card
 # -----------------------------
-prediction = "Waiting..."
+prediction = "Waiting for Sensor Data..."
 
 st.markdown(f"""
 <div class='status'>
