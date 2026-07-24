@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 
 # -----------------------------
@@ -9,7 +10,7 @@ st.set_page_config(
     page_icon="🩺",
     layout="wide"
 )
-
+st_autorefresh(interval=1000, key="clock")
 # -----------------------------
 # Custom CSS
 # -----------------------------
@@ -41,14 +42,26 @@ html, body, [class*="css"]{
 /* Refresh Button */
 
 .stButton>button{
-    background:#008CFF;
+
+    background: linear-gradient(135deg,#00C6FF,#0072FF);
     color:white;
     border:none;
-    border-radius:10px;
-    padding:14px 28px;
+    border-radius:12px;
+    padding:14px 30px;
     font-size:18px;
-    font-weight:600;
-    transition:0.3s;
+    font-weight:700;
+    box-shadow:0 8px 20px rgba(0,114,255,.35);
+    transition:all .3s ease;
+
+}
+
+.stButton>button:hover{
+
+    transform:scale(1.08);
+    background:linear-gradient(135deg,#4FACFE,#00F2FE);
+    box-shadow:0 10px 25px rgba(0,255,255,.45);
+    cursor:pointer;
+
 }
 
 .stButton>button:hover{
