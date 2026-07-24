@@ -24,30 +24,18 @@ html, body, [class*="css"]{
 
 .title{
     text-align:center;
-    font-size:42px;
-    font-weight:bold;
+    font-size:46px;
+    font-weight:800;
     color:white;
+    margin-top:20px;
+    margin-bottom:55px;
+
     text-shadow:
-        0px 0px 10px #00BFFF,
-        0px 0px 20px #00BFFF,
-        0px 0px 40px #00BFFF;
-    animation: glow 2s infinite alternate;
+        0px 0px 8px rgba(0,191,255,.45),
+        0px 0px 18px rgba(0,191,255,.25);
 }
 
-@keyframes glow{
 
-from{
-text-shadow:
-0px 0px 5px #00BFFF;
-}
-
-to{
-text-shadow:
-0px 0px 25px #00BFFF,
-0px 0px 50px #00BFFF;
-}
-
-}
 
 /* Card */
 
@@ -77,8 +65,8 @@ border:none;
 
 border-radius:10px;
 
-padding:12px 22px;
-
+padding:14px 28px;
+font-weight:600;
 font-size:18px;
 
 transition:0.3s;
@@ -140,7 +128,11 @@ margin-bottom:20px;
 st.markdown(
 """
 <div class='title'>
-🩺 SMART FOOTWEAR FOR EARLY ULCER DETECTION
+st.markdown("""
+<div class='title'>
+SMART FOOTWEAR FOR EARLY ULCER DETECTION
+</div>
+""", unsafe_allow_html=True)
 </div>
 """,
 unsafe_allow_html=True
@@ -152,7 +144,7 @@ with left:
     if st.button("🔄 Refresh"):
 
         st.rerun()
-
+st.markdown("<br>", unsafe_allow_html=True)
 with right:
 
     st.markdown(
