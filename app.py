@@ -24,13 +24,31 @@ with left:
         st.rerun()
 
 with right:
-    current_time = datetime.now().strftime("%d-%m-%Y  %I:%M:%S %p")
-    st.markdown(
-        f"<div style='text-align:right; font-size:18px;'>"
-        f"🕒 <b>{current_time}</b>"
-        f"</div>",
-        unsafe_allow_html=True
-    )
+    st.components.v1.html("""
+    <div id="clock" style="text-align:right; font-size:18px; font-weight:bold;">
+    </div>
+
+    <script>
+    function updateClock() {
+        const now = new Date();
+
+        const options = {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        };
+
+        const date = now.toLocaleDateString('en-GB', options);
+        const time = now.toLocaleTimeString();
+
+        document.getElementById("clock").innerHTML =
+            "🕒 " + date + " " + time;
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    </script>
+    """, height=35)
 
 # ---------------- FETCH DATA ----------------
 try:
