@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("Smart Footwear for Early Ulcer Detection")
+st.title("🩺 Smart Footwear for Early Detection of Foot Ulcers")
 
 # Refresh Button
 if st.button("Refresh Live Data"):
