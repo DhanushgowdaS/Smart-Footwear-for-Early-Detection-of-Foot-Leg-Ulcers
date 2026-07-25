@@ -17,7 +17,7 @@ try:
             col1, col2 = st.columns(2)
             with col1:
                 st.subheader("Pressure Analysis")
-@@ -28,23 +25,19 @@
+
                 st.subheader("Temperature")
                 st.line_chart(df[['temp1']])
 
