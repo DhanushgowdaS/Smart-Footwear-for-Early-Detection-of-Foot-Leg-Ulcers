@@ -21,8 +21,7 @@ try:
                 st.subheader("Temperature")
                 st.line_chart(df[['temp1']])
 
-            # --- LAYOUT: ML STATUS & TABLE ---
-            st.subheader("Latest Entries & ML Status")
+    
 
             st.subheader("Latest Entries & Status")
             latest = df.iloc[-1]
