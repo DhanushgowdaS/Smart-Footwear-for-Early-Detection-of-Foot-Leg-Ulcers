@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🥾 Smart Footwear: Real-Time Monitoring")
+st.title("🩺 Smart Footwear for Early Ulcer Detection")
 
 
 
