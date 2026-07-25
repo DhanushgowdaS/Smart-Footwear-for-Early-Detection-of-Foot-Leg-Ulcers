@@ -72,7 +72,6 @@ try:
                 st.line_chart(df[["temp1"]])
 
             # ---------------- OVERALL RISK ASSESSMENT ----------------
-
             last10 = df.head(10)
 
             counts = last10["prediction"].astype(str).str.lower().value_counts()
@@ -122,9 +121,18 @@ Based on Last 10 Readings
                 else:
                     return str(val)
 
+            # Convert prediction to colored status
             df["Display_Status"] = df["prediction"].apply(add_emoji)
 
+            # Show only latest 20 readings
+            table_df = df.head(20).copy()
+
+            # Add serial number
+            table_df.insert(0, "No.", range(1, len(table_df) + 1))
+
+            # Columns to display
             cols = [
+                "No.",
                 "timestamp",
                 "Display_Status",
                 "fsr1",
@@ -134,7 +142,11 @@ Based on Last 10 Readings
                 "temp1"
             ]
 
-            st.dataframe(df[cols], use_container_width=True)
+            st.dataframe(
+                table_df[cols],
+                use_container_width=True,
+                hide_index=True
+            )
 
         else:
             st.warning("Waiting for sensor data...")
