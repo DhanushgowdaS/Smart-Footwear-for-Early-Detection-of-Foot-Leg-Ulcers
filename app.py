@@ -73,7 +73,7 @@ try:
 
             # ---------------- OVERALL RISK ASSESSMENT ----------------
             # Use the last 10 minutes of data (60 readings at 10-second intervals)
-            last10 = df.head(60)
+            last60 = df.head(60)
 
             counts = last60["prediction"].astype(str).str.lower().value_counts()
 
