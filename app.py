@@ -34,12 +34,15 @@ try:
         latest = df.iloc[-1]
 
     else:
-        st.warning("Waiting for sensor data...")
-        st.stop()
+      else:
+    st.warning("Waiting for sensor data...")
+    df = pd.DataFrame()
+    latest = None
 
 except Exception as e:
     st.error(f"Connection failed: {e}")
-    st.stop()
+    df = pd.DataFrame()
+    latest = None
 
 
 # -----------------------------
