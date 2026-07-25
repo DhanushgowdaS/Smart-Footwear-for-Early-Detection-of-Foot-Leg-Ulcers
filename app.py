@@ -1,65 +1,59 @@
-import streamlit as st
-import pandas as pd
-import requests
+st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
+st.title("🥾 Smart Footwear: Real-Time Monitoring")
 
-API_URL = "https://smart-footwear-api.onrender.com"
 
-st.set_page_config(
-    page_title="Smart Footwear Dashboard",
-    layout="wide"
-)
 
-st.title("Smart Footwear for Early Ulcer Detection")
-
-if st.button("🔄 Refresh Live Data"):
+# Manual Refresh Button
+if st.button("Refresh Live Data"):
     st.rerun()
 
 
-# -----------------------------
-# Fetch Live Data
-# -----------------------------
+
+# --- DATA FETCHING ---
 try:
-    response = requests.get(f"{API_URL}/data", timeout=10)
-    response.raise_for_status()
+    response = requests.get(API_URL, timeout=10)
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            df = pd.DataFrame(data)
 
-    data = response.json()
+        
 
-   if len(data) > 0:
-    df = pd.DataFrame(data)
-
-    if "timestamp" in df.columns:
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-        df = df.sort_values("timestamp")
-
-    latest = df.iloc[-1]
-
-else:
-    st.warning("Waiting for sensor data...")
-    df = pd.DataFrame()
-    latest = None
-
-except Exception as e:
-    st.error(f"Connection failed: {e}")
-    df = pd.DataFrame()
-    latest = None
-
-
-# -----------------------------
-# Graphs
-# -----------------------------
-col1, col2 = st.columns(2)
+            # --- LAYOUT: CHARTS ---
+           col1, col2 = st.columns(2)
 
 with col1:
     st.subheader("Pressure Analysis")
 
-    if not df.empty:
-        pressure_cols = [c for c in ["fsr1", "fsr2", "fsr3", "fsr4"] if c in df.columns]
-        if pressure_cols:
-            st.line_chart(df[pressure_cols])
-
 with col2:
     st.subheader("Temperature")
+    st.line_chart(df[['temp1']])
 
-    if not df.empty:
-        if "temp1" in df.columns:
-            st.line_chart(df[["temp1"]])
+
+    
+            # --- LAYOUT: ML STATUS & TABLE ---
+            st.subheader("Latest Entries & ML Status")
+            st.subheader("Latest Entries & Status")
+
+            # Mapping status to emojis for better visual representation
+            def add_emoji(val):
+                if val == "Critical": return "🔴 Critical"
+                if val == "Normal": return "🟡 Normal"
+                return "🟢 Good"
+
+            df['Display_Status'] = df['status'].apply(add_emoji)
+
+
+
+            # Reorder columns to show status first
+            cols = ['Display_Status', 'fsr1', 'fsr2', 'fsr3', 'fsr4', 'temp1']
+            st.dataframe(df[cols].tail(10), use_container_width=True)
+        else:
+            st.warning("No data yet. Waiting for ESP32...")
+            st.warning("Waiting for sensor data...")
+    else:
+        st.error(f"Backend returned error: {response.status_code}")
+        st.error(f"Error: {response.status_code}")
+except Exception as e:
+    st.error(f"Connection error: {e}")
+    st.error(f"Connection failed: {e}")    
