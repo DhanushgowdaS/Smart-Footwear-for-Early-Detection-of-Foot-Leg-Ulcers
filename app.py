@@ -11,9 +11,23 @@ st.set_page_config(
 
 st.title("🩺 Smart Footwear for Early Detection of Foot Ulcers")
 
-# Refresh Button
-if st.button("Refresh Live Data"):
-    st.rerun()
+from datetime import datetime
+
+# ---------------- REFRESH & LIVE TIME ----------------
+left, right = st.columns([1, 1])
+
+with left:
+    if st.button("🔄 Refresh Live Data"):
+        st.rerun()
+
+with right:
+    current_time = datetime.now().strftime("%d-%m-%Y  %I:%M:%S %p")
+    st.markdown(
+        f"<div style='text-align:right; font-size:18px;'>"
+        f"🕒 <b>{current_time}</b>"
+        f"</div>",
+        unsafe_allow_html=True
+    )
 
 # ---------------- FETCH DATA ----------------
 try:
