@@ -1,170 +1,47 @@
-import requests
-import pandas as pd
-import streamlit as st
+st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
+st.title(" Smart Footwear: Real-Time Monitoring")
 
-from datetime import datetime
-# -----------------------------
-# API Configuration
-# -----------------------------
-API_URL = "https://smart-footwear-api.onrender.com"
-# -----------------------------
-# Page Configuration
-# -----------------------------
-st.set_page_config(
-    page_title="Smart Footwear Dashboard",
-    page_icon="🩺",
-    layout="wide"
-)
+# Manual Refresh Button
+if st.button("Refresh Live Data"):
+    st.rerun()
 
-# -----------------------------
-# Custom CSS
-# -----------------------------
-st.markdown("""
-<style>
-
-html, body, [class*="css"]{
-    font-family: Arial, sans-serif;
-}
-
-.stApp{
-    background:#081421;
-}
-
-/* Title */
-
-.title{
-    text-align:center;
-    font-size:46px;
-    font-weight:800;
-    color:white;
-    margin-top:20px;
-    margin-bottom:55px;
-    text-shadow:
-        0px 0px 8px rgba(0,191,255,.45),
-        0px 0px 18px rgba(0,191,255,.25);
-}
-
-
-    
-/* Refresh Button */
-
-.stButton>button{
-
-    background: linear-gradient(135deg,#00C6FF,#0072FF);
-    color:white;
-    border:none;
-    border-radius:12px;
-    padding:14px 30px;
-    font-size:18px;
-    font-weight:700;
-    box-shadow:0 8px 20px rgba(0,114,255,.35);
-    transition:all .3s ease;
-
-}
-
-.stButton>button:hover{
-
-    transform:scale(1.08);
-    background:linear-gradient(135deg,#4FACFE,#00F2FE);
-    box-shadow:0 10px 25px rgba(0,255,255,.45);
-    cursor:pointer;
-
-}
-
-
-
-/* Time */
-
-.time{
-    text-align:right;
-    font-size:18px;
-    font-weight:bold;
-    color:#D6EAF8;
-    margin-top:12px;
-}
-
-/* Prediction Card */
-
-.status{
-    background:#102842;
-    border-radius:18px;
-    padding:45px;
-    text-align:center;
-    font-size:36px;
-    font-weight:700;
-    color:white;
-    box-shadow:0 0 30px rgba(0,191,255,.30);
-    margin-top:40px;
-    margin-bottom:30px;
-}
-
-</style>
-""", unsafe_allow_html=True)
-# -----------------------------
-# Fetch Live Data
-# -----------------------------
+# --- DATA FETCHING ---
 try:
-    response = requests.get(f"{API_URL}/data", timeout=10)
-    response.raise_for_status()
+    response = requests.get(API_URL, timeout=10)
+    if response.status_code == 200:
+        data = response.json()
+        if data:
+            df = pd.DataFrame(data)
 
-    data = response.json()
+            # --- LAYOUT: CHARTS ---
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Pressure Analysis")
+@@ -28,23 +25,19 @@
+                st.subheader("Temperature")
+                st.line_chart(df[['temp1']])
 
-    if len(data) > 0:
-        df = pd.DataFrame(data)
-        df["timestamp"] = pd.to_datetime(df["timestamp"])
-        df = df.sort_values("timestamp")
+            # --- LAYOUT: ML STATUS & TABLE ---
+            st.subheader("Latest Entries & ML Status")
+            st.subheader("Latest Entries & Status")
 
-        latest = df.iloc[-1]
+            # Mapping status to emojis for better visual representation
+            def add_emoji(val):
+                if val == "Critical": return "🔴 Critical"
+                if val == "Normal": return "🟡 Normal"
+                return "🟢 Good"
 
-        prediction = latest["prediction"]
-
+            df['Display_Status'] = df['status'].apply(add_emoji)
+            
+            # Reorder columns to show status first
+            cols = ['Display_Status', 'fsr1', 'fsr2', 'fsr3', 'fsr4', 'temp1']
+            st.dataframe(df[cols].tail(10), use_container_width=True)
+        else:
+            st.warning("No data yet. Waiting for ESP32...")
+            st.warning("Waiting for sensor data...")
     else:
-        prediction = "Waiting for Sensor Data..."
-
-except Exception:
-    prediction = "Server Offline"
-    df = pd.DataFrame()
-# -----------------------------
-# Title
-# -----------------------------
-st.markdown("""
-<div class='title'>
-SMART FOOTWEAR FOR EARLY ULCER DETECTION
-</div>
-""", unsafe_allow_html=True)
-
-# -----------------------------
-# Refresh & Time
-# -----------------------------
-left, right = st.columns([1,3])
-
-with left:
-    if st.button("🔄 Refresh"):
-        st.rerun()
-
-with right:
-    st.markdown(
-        f"<div class='time'>{datetime.now().strftime('%d %B %Y | %I:%M:%S %p')}</div>",
-        unsafe_allow_html=True
-    )
-
-# -----------------------------
-#CURRENT AI STATUS Card
-# -----------------------------
-col1, col2 = st.columns(2)
-
-with col1:
-    st.markdown("""
-    <div class='status'>
-    CURRENT AI STATUS
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown(f"""
-    <div class='status'>
-    {prediction}
-    </div>
-    """, unsafe_allow_html=True)
-
-
+        st.error(f"Backend returned error: {response.status_code}")
+        st.error(f"Error: {response.status_code}")
+except Exception as e:
+    st.error(f"Connection error: {e}")
+    st.error(f"Connection failed: {e}")
