@@ -18,14 +18,26 @@ if st.button("Refresh Live Data"):
     st.rerun()
 
 
-
 # --- DATA FETCHING ---
 try:
-   response = requests.get(f"{API_URL}/data", timeout=10)
+    response = requests.get(f"{API_URL}/data", timeout=10)
+
     if response.status_code == 200:
         data = response.json()
+
         if data:
             df = pd.DataFrame(data)
+        else:
+            st.warning("Waiting for sensor data...")
+            df = pd.DataFrame()
+
+    else:
+        st.error(f"Backend returned error: {response.status_code}")
+        df = pd.DataFrame()
+
+except Exception as e:
+    st.error(f"Connection failed: {e}")
+    df = pd.DataFrame()
 
         
 
