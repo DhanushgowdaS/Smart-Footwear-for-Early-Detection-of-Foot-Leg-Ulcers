@@ -35,27 +35,21 @@ try:
             with col2:
                 st.subheader("Temperature")
                 st.line_chart(df[["temp1"]])
-                
-           # ================= STATUS CARDS =================
-            col1, col2 = st.columns(2)
+    
 
-            # Latest prediction
-                  latest_prediction = str(df.iloc[0]["prediction"]).lower()
+                # ================= OVERALL RISK ASSESSMENT =================
 
-                  if "high" in latest_prediction:
-                        current_status = "🔴 High Risk"
-                  elif "medium" in latest_prediction:
-                         current_status = "🟠 Medium Risk"
-                  elif "low" in latest_prediction:
-                         current_status = "🟡 Low Risk"
-                  else:
-                         current_status = "🟢 Safe"
+            st.info("""
+            ### Overall Risk Assessment
 
-           with col1:
-                st.info(f"### Current AI Status\n{current_status}")
+            🟢 Safe
 
-            with col2:
-                 st.info("### Overall Risk Assessment\n🟢 Safe")
+            Based on Last 10 Readings
+            """)
+
+
+
+            
             # ---------------- STATUS ----------------
             st.subheader("Latest Entries & Status")
 
