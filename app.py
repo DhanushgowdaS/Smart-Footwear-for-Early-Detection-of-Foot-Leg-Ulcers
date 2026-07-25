@@ -37,13 +37,13 @@ try:
                 st.line_chart(df[["temp1"]])
                 
            # ================= STATUS CARDS =================
-col1, col2 = st.columns(2)
+            col1, col2 = st.columns(2)
 
-with col1:
-    st.info("### Current AI Status\n🟢 Safe")
+            with col1:
+                 st.info("### Current AI Status\n🟢 Safe")
 
-with col2:
-    st.info("### Overall Risk Assessment\n🟢 Safe")
+            with col2:
+                 st.info("### Overall Risk Assessment\n🟢 Safe")
             # ---------------- STATUS ----------------
             st.subheader("Latest Entries & Status")
 
