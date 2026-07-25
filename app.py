@@ -1,3 +1,4 @@
+from streamlit_autorefresh import st_autorefresh
 import streamlit as st
 import pandas as pd
 import requests
@@ -8,6 +9,8 @@ st.set_page_config(
     page_title="Smart Footwear Dashboard",
     layout="wide"
 )
+
+st_autorefresh(interval=1000, key="live_dashboard")
 
 st.title("🩺 Smart Footwear for Early Detection of Foot Ulcers")
 
