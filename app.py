@@ -19,15 +19,15 @@ try:
 
         
 
-            # --- LAYOUT: CHARTS ---
-           col1, col2 = st.columns(2)
+                      # --- LAYOUT: CHARTS ---
+            col1, col2 = st.columns(2)
 
-with col1:
-    st.subheader("Pressure Analysis")
+            with col1:
+                st.subheader("Pressure Analysis")
 
-with col2:
-    st.subheader("Temperature")
-    st.line_chart(df[['temp1']])
+            with col2:
+                st.subheader("Temperature")
+                st.line_chart(df[['temp1']])
 
 
     
