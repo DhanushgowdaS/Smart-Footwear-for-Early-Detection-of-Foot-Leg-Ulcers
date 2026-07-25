@@ -10,11 +10,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# Auto refresh (every second)
 st_autorefresh(interval=1000, key="live_dashboard")
 
 st.title("🩺 Smart Footwear for Early Detection of Foot Ulcers")
-
-from datetime import datetime
 
 # ---------------- REFRESH & LIVE TIME ----------------
 left, right = st.columns([1, 1])
@@ -25,20 +24,20 @@ with left:
 
 with right:
     st.components.v1.html("""
-    <div id="clock" style="text-align:right; font-size:18px; font-weight:bold;">
+    <div id="clock"
+    style="
+        text-align:right;
+        font-size:18px;
+        font-weight:bold;
+        color:white;
+    ">
     </div>
 
     <script>
     function updateClock() {
         const now = new Date();
 
-        const options = {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        };
-
-        const date = now.toLocaleDateString('en-GB', options);
+        const date = now.toLocaleDateString('en-GB');
         const time = now.toLocaleTimeString();
 
         document.getElementById("clock").innerHTML =
@@ -58,6 +57,7 @@ try:
         data = response.json()
 
         if data:
+
             df = pd.DataFrame(data)
 
             # ---------------- CHARTS ----------------
@@ -70,33 +70,57 @@ try:
             with col2:
                 st.subheader("Temperature")
                 st.line_chart(df[["temp1"]])
-    
 
-                # ================= OVERALL RISK ASSESSMENT =================
+            # ---------------- OVERALL RISK ASSESSMENT ----------------
 
-            st.info("""
-            ### Overall Risk Assessment
+            last10 = df.head(10)
 
-            🟢 Safe
+            counts = last10["prediction"].astype(str).str.lower().value_counts()
 
-            Based on Last 10 Readings
-            """)
+            high = counts.get("high risk", 0)
+            medium = counts.get("medium risk", 0)
+            low = counts.get("low risk", 0)
+            safe = counts.get("safe", 0)
 
+            if high >= max(medium, low, safe):
+                overall = "🔴 High Risk"
+            elif medium >= max(high, low, safe):
+                overall = "🟠 Medium Risk"
+            elif low >= max(high, medium, safe):
+                overall = "🟡 Low Risk"
+            else:
+                overall = "🟢 Safe"
 
+            st.info(f"""
+### Overall Risk Assessment
 
-            
-            # ---------------- STATUS ----------------
+{overall}
+
+Based on Last 10 Readings
+
+🔴 High Risk : {high}
+🟠 Medium Risk : {medium}
+🟡 Low Risk : {low}
+🟢 Safe : {safe}
+""")
+
+            # ---------------- STATUS TABLE ----------------
+
             st.subheader("Latest Entries & Status")
 
             def add_emoji(val):
                 val = str(val).lower()
 
-                if "critical" in val:
-                    return "🔴 Critical"
-                elif "normal" in val:
-                    return "🟡 Normal"
+                if "high" in val:
+                    return "🔴 High Risk"
+                elif "medium" in val:
+                    return "🟠 Medium Risk"
+                elif "low" in val:
+                    return "🟡 Low Risk"
+                elif "safe" in val:
+                    return "🟢 Safe"
                 else:
-                    return "🟢 " + str(val)
+                    return str(val)
 
             df["Display_Status"] = df["prediction"].apply(add_emoji)
 
