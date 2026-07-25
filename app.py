@@ -39,8 +39,20 @@ try:
            # ================= STATUS CARDS =================
             col1, col2 = st.columns(2)
 
-            with col1:
-                 st.info("### Current AI Status\n🟢 Safe")
+            # Latest prediction
+                  latest_prediction = str(df.iloc[0]["prediction"]).lower()
+
+                  if "high" in latest_prediction:
+                        current_status = "🔴 High Risk"
+                  elif "medium" in latest_prediction:
+                         current_status = "🟠 Medium Risk"
+                  elif "low" in latest_prediction:
+                         current_status = "🟡 Low Risk"
+                  else:
+                         current_status = "🟢 Safe"
+
+           with col1:
+                st.info(f"### Current AI Status\n{current_status}")
 
             with col2:
                  st.info("### Overall Risk Assessment\n🟢 Safe")
