@@ -9,16 +9,13 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🩺 Smart Footwear for Early Ulcer Detection")
+st.title("Smart Footwear for Early Ulcer Detection")
 
-
-
-# Manual Refresh Button
+# Refresh Button
 if st.button("Refresh Live Data"):
     st.rerun()
 
-
-# --- DATA FETCHING ---
+# ---------------- FETCH DATA ----------------
 try:
     response = requests.get(f"{API_URL}/data", timeout=10)
 
@@ -27,55 +24,50 @@ try:
 
         if data:
             df = pd.DataFrame(data)
-        else:
-            st.warning("Waiting for sensor data...")
-            df = pd.DataFrame()
 
-    else:
-        st.error(f"Backend returned error: {response.status_code}")
-        df = pd.DataFrame()
-
-except Exception as e:
-    st.error(f"Connection failed: {e}")
-    df = pd.DataFrame()
-
-        
-
-                      # --- LAYOUT: CHARTS ---
+            # ---------------- CHARTS ----------------
             col1, col2 = st.columns(2)
 
             with col1:
                 st.subheader("Pressure Analysis")
+                st.line_chart(df[["fsr1", "fsr2", "fsr3", "fsr4"]])
 
             with col2:
                 st.subheader("Temperature")
-                st.line_chart(df[['temp1']])
+                st.line_chart(df[["temp1"]])
 
-
-    
-            # --- LAYOUT: ML STATUS & TABLE ---
-            st.subheader("Latest Entries & ML Status")
+            # ---------------- STATUS ----------------
             st.subheader("Latest Entries & Status")
 
-            # Mapping status to emojis for better visual representation
             def add_emoji(val):
-                if val == "Critical": return "🔴 Critical"
-                if val == "Normal": return "🟡 Normal"
-                return "🟢 Good"
+                val = str(val).lower()
 
-            df['Display_Status'] = df['status'].apply(add_emoji)
+                if "critical" in val:
+                    return "🔴 Critical"
+                elif "normal" in val:
+                    return "🟡 Normal"
+                else:
+                    return "🟢 " + str(val)
 
+            df["Display_Status"] = df["prediction"].apply(add_emoji)
 
+            cols = [
+                "timestamp",
+                "Display_Status",
+                "fsr1",
+                "fsr2",
+                "fsr3",
+                "fsr4",
+                "temp1"
+            ]
 
-            # Reorder columns to show status first
-            cols = ['Display_Status', 'fsr1', 'fsr2', 'fsr3', 'fsr4', 'temp1']
-            st.dataframe(df[cols].tail(10), use_container_width=True)
+            st.dataframe(df[cols], use_container_width=True)
+
         else:
-            st.warning("No data yet. Waiting for ESP32...")
             st.warning("Waiting for sensor data...")
+
     else:
         st.error(f"Backend returned error: {response.status_code}")
-        st.error(f"Error: {response.status_code}")
+
 except Exception as e:
-    st.error(f"Connection error: {e}")
-    st.error(f"Connection failed: {e}")    
+    st.error(f"Connection failed: {e}")
