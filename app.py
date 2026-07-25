@@ -13,6 +13,8 @@ st.title("Smart Footwear for Early Ulcer Detection")
 
 if st.button("🔄 Refresh Live Data"):
     st.rerun()
+
+
 # -----------------------------
 # Fetch Live Data
 # -----------------------------
@@ -38,3 +40,24 @@ try:
 except Exception as e:
     st.error(f"Connection failed: {e}")
     st.stop()
+
+
+# -----------------------------
+# Graphs
+# -----------------------------
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("Pressure Analysis")
+
+    if not df.empty:
+        pressure_cols = [c for c in ["fsr1", "fsr2", "fsr3", "fsr4"] if c in df.columns]
+        if pressure_cols:
+            st.line_chart(df[pressure_cols])
+
+with col2:
+    st.subheader("Temperature")
+
+    if not df.empty:
+        if "temp1" in df.columns:
+            st.line_chart(df[["temp1"]])
