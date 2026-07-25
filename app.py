@@ -72,9 +72,10 @@ try:
                 st.line_chart(df[["temp1"]])
 
             # ---------------- OVERALL RISK ASSESSMENT ----------------
-            last10 = df.head(10)
+            # Use the last 10 minutes of data (60 readings at 10-second intervals)
+            last10 = df.head(60)
 
-            counts = last10["prediction"].astype(str).str.lower().value_counts()
+            counts = last60["prediction"].astype(str).str.lower().value_counts()
 
             high = counts.get("high risk", 0)
             medium = counts.get("medium risk", 0)
@@ -95,7 +96,7 @@ try:
 
 {overall}
 
-Based on Last 10 Readings
+Based on Readings from the Last 10 Minutes
 
 🔴 High Risk : {high}
 🟠 Medium Risk : {medium}
