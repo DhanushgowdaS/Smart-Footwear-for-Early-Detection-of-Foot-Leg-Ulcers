@@ -21,7 +21,7 @@ if st.button("Refresh Live Data"):
 
 # --- DATA FETCHING ---
 try:
-    response = requests.get(API_URL, timeout=10)
+   response = requests.get(f"{API_URL}/data", timeout=10)
     if response.status_code == 200:
         data = response.json()
         if data:
