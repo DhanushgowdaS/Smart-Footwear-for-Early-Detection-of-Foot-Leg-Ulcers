@@ -1,5 +1,5 @@
 st.set_page_config(page_title="Smart Footwear Dashboard", layout="wide")
-st.title(" Smart Footwear: Real-Time Monitoring")
+st.title("Smart Footwear for Early Ulcer Detection")
 
 # Manual Refresh Button
 if st.button("Refresh Live Data"):
@@ -23,8 +23,11 @@ try:
 
             # --- LAYOUT: ML STATUS & TABLE ---
             st.subheader("Latest Entries & ML Status")
-            st.subheader("Latest Entries & Status")
 
+            st.subheader("Latest Entries & Status")
+            latest = df.iloc[-1]
+            st.info(f"🤖 AI STATUS : {latest['status']}")
+            
             # Mapping status to emojis for better visual representation
             def add_emoji(val):
                 if val == "Critical": return "🔴 Critical"
