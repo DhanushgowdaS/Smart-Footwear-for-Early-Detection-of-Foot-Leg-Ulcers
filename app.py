@@ -1,7 +1,12 @@
+import requests
+import pandas as pd
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
-from datetime import datetime
 
+from datetime import datetime
+# -----------------------------
+# API Configuration
+# -----------------------------
+API_URL = "https://smart-footwear-api.onrender.com"
 # -----------------------------
 # Page Configuration
 # -----------------------------
@@ -10,7 +15,7 @@ st.set_page_config(
     page_icon="🩺",
     layout="wide"
 )
-st_autorefresh(interval=1000, key="clock")
+
 # -----------------------------
 # Custom CSS
 # -----------------------------
@@ -39,6 +44,8 @@ html, body, [class*="css"]{
         0px 0px 18px rgba(0,191,255,.25);
 }
 
+
+    
 /* Refresh Button */
 
 .stButton>button{
@@ -93,7 +100,30 @@ html, body, [class*="css"]{
 
 </style>
 """, unsafe_allow_html=True)
+# -----------------------------
+# Fetch Live Data
+# -----------------------------
+try:
+    response = requests.get(f"{API_URL}/data", timeout=10)
+    response.raise_for_status()
 
+    data = response.json()
+
+    if len(data) > 0:
+        df = pd.DataFrame(data)
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df = df.sort_values("timestamp")
+
+        latest = df.iloc[-1]
+
+        prediction = latest["prediction"]
+
+    else:
+        prediction = "Waiting for Sensor Data..."
+
+except Exception:
+    prediction = "Server Offline"
+    df = pd.DataFrame()
 # -----------------------------
 # Title
 # -----------------------------
@@ -119,13 +149,14 @@ with right:
     )
 
 # -----------------------------
-# Prediction Card
+#CURRENT AI STATUS Card
 # -----------------------------
-prediction = "Waiting for Sensor Data..."
-
 st.markdown(f"""
 <div class='status'>
-Prediction<br><br>
+CURRENT AI STATUS
+<br><br>
 {prediction}
 </div>
 """, unsafe_allow_html=True)
+
+
