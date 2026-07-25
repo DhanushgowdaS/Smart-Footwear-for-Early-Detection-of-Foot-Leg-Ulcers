@@ -24,17 +24,16 @@ try:
 
     data = response.json()
 
-    if len(data) > 0:
-        df = pd.DataFrame(data)
+   if len(data) > 0:
+    df = pd.DataFrame(data)
 
-        if "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(df["timestamp"])
-            df = df.sort_values("timestamp")
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+        df = df.sort_values("timestamp")
 
-        latest = df.iloc[-1]
+    latest = df.iloc[-1]
 
-    else:
-      else:
+else:
     st.warning("Waiting for sensor data...")
     df = pd.DataFrame()
     latest = None
