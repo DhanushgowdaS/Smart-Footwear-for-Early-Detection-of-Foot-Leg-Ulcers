@@ -149,10 +149,6 @@ ESP32 -> FastAPI -> Random Forest -> Database -> Dashboard
 -   Doctor portal
 -   More sensors
 
-## Contributors
-
-Dhanush S
-
 ## License
 
 MIT
