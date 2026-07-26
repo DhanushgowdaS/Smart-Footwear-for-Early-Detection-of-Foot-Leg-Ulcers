@@ -24,8 +24,6 @@ GND    ----> GND
 Note:
 Connect a 4.7kΩ resistor between DATA and 3.3V.
 
-Author: Dhanush S
-Project: Smart Footwear for Ulcer Detection
 =========================================================
 */
 
