@@ -1,3 +1,36 @@
+/*
+=========================================================
+Smart Footwear for Ulcer Detection
+=========================================================
+
+Description:
+This program reads real-time pressure values from four
+Force Sensitive Resistor (FSR) sensors and temperature
+from a DS18B20 sensor using an ESP32. The sensor values
+are averaged over a fixed interval and transmitted to a
+FastAPI backend through Wi-Fi using HTTP POST requests.
+The backend processes the received data using a trained
+Random Forest Machine Learning model to predict the
+risk level of diabetic foot ulcer formation.
+
+Features:
+- Reads four FSR sensors
+- Reads one DS18B20 temperature sensor
+- Calculates average sensor values
+- Connects to Wi-Fi
+- Sends sensor data to FastAPI backend
+- Displays sensor readings and server response
+  on the Serial Monitor
+
+Hardware Used:
+- ESP32 Development Board
+- 4 × Force Sensitive Resistors (FSRs)
+- 1 × DS18B20 Temperature Sensor
+- 4 × 10kΩ Resistors (Voltage Divider)
+- 1 × 4.7kΩ Pull-up Resistor
+
+=========================================================
+*/
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
