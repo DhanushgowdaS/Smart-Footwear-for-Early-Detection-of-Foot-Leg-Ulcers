@@ -1,13 +1,23 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
 
 // ==========================
 // WiFi Credentials
 // ==========================
-const char* ssid = "Dhanu";
-const char* password = "Dhanu...";
+const char* ssid = "Admin";
+const char* password = "password";
 const char* serverUrl = "https://smart-footwear-api.onrender.com/log";
+
+// ==========================
+// DS18B20 Temperature Sensor
+// ==========================
+#define ONE_WIRE_BUS 4
+
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature tempSensors(&oneWire);
 
 // ==========================
 // Variables
@@ -26,7 +36,10 @@ unsigned long startTime = 0;
 // Setup
 // ==========================
 void setup() {
+
   Serial.begin(115200);
+
+  tempSensors.begin();
 
   WiFi.begin(ssid, password);
 
@@ -50,14 +63,24 @@ void setup() {
 // ==========================
 void loop() {
 
-  // Replace these with your actual sensor readings
+  // FSR Readings
   sumFSR1 += analogRead(34);
   sumFSR2 += analogRead(36);
   sumFSR3 += analogRead(32);
   sumFSR4 += analogRead(33);
 
-  // Replace with actual temperature sensor
-  sumTemp1 += 29.25;
+  // ==========================
+  // Read Temperature
+  // ==========================
+  tempSensors.requestTemperatures();
+
+  float temperature = tempSensors.getTempCByIndex(0);
+
+  if (temperature != DEVICE_DISCONNECTED_C) {
+    sumTemp1 += temperature;
+  } else {
+    Serial.println("Temperature Sensor Disconnected!");
+  }
 
   sampleCount++;
 
@@ -78,7 +101,7 @@ void loop() {
     Serial.printf("FSR2 : %.2f\n", avgFSR2);
     Serial.printf("FSR3 : %.2f\n", avgFSR3);
     Serial.printf("FSR4 : %.2f\n", avgFSR4);
-    Serial.printf("TEMP : %.2f\n", avgTemp1);
+    Serial.printf("TEMP : %.2f C\n", avgTemp1);
 
     sendData(avgFSR1, avgFSR2, avgFSR3, avgFSR4, avgTemp1);
 
@@ -113,7 +136,6 @@ void sendData(float f1, float f2, float f3, float f4, float t1) {
 
   StaticJsonDocument<256> doc;
 
-  // REQUIRED by FastAPI
   doc["scenario"] = "Walking";
 
   doc["fsr1"] = f1;
@@ -145,7 +167,6 @@ void sendData(float f1, float f2, float f3, float f4, float t1) {
 
     Serial.print("POST Failed: ");
     Serial.println(http.errorToString(httpResponseCode));
-
   }
 
   http.end();
