@@ -25,8 +25,6 @@ GPIO33   -----> FSR4
 Each FSR should be connected as a voltage divider
 using a 10kΩ resistor to GND.
 
-Author: Dhanush S
-Project: Smart Footwear for Ulcer Detection
 =========================================================
 */
 
