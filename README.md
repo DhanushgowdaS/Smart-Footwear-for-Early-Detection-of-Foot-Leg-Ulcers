@@ -1,84 +1,158 @@
-#  Smart Footwear for Early Detection of Foot/Leg Ulcers
+# 🥾 Smart Footwear for Early Detection of Foot/Leg Ulcers
 
-A wearable healthcare system designed to **detect the early signs of diabetic foot ulcers before visible wounds develop**. The project continuously monitors **foot pressure** and **skin temperature**, then uses **Machine Learning (Random Forest)** to identify abnormal patterns that may indicate a high risk of ulcer formation.
+An IoT and Machine Learning based smart footwear system for real-time
+monitoring and early prediction of diabetic foot ulcer risk.
 
-##  Features
+## Table of Contents
 
-* Real-time foot pressure monitoring
-* Skin temperature monitoring
-* Early ulcer risk prediction
-* Machine Learning-based analysis
-* Preventive healthcare approach
-* Low-power wearable design
+-   Introduction
+-   Objectives
+-   Features
+-   System Architecture
+-   Workflow
+-   Machine Learning Pipeline
+-   Hardware Components
+-   Software Stack
+-   Pin Configuration
+-   Project Structure
+-   Installation
+-   API Flow
+-   Future Scope
+-   Contributors
+-   License
 
-##  Hardware
+## Introduction
 
-* Pressure Sensors
-* Temperature Sensors
-* Microcontroller (ESP32/Arduino)
-* Smart Insole
-* Rechargeable Battery
+This project integrates ESP32, four FSR sensors, a DS18B20 temperature
+sensor, FastAPI, SQLite, Streamlit, and a Random Forest model to monitor
+foot pressure and temperature, then estimate ulcer risk.
 
-##  Machine Learning
+## Objectives
 
-The system uses a **Random Forest Classifier** to analyze pressure and temperature data collected from the sensors. It learns normal foot conditions and predicts the risk of ulcer formation when abnormal pressure distribution and localized temperature increases are detected.
+-   Monitor plantar pressure
+-   Monitor temperature
+-   Predict ulcer risk
+-   Display real-time dashboard
+-   Support early detection
 
-##  Workflow
+## Features
 
-```text
-Pressure Sensors 
-        │
-Temperature Sensors 
-        │
-        ▼
- Microcontroller
-        │
-        ▼
- Data Collection
-        │
-        ▼
- Feature Processing
-        │
-        ▼
- Random Forest Model
-        │
-        ▼
- Ulcer Risk Prediction
-        │
-        ▼
- User Alert
+-   ESP32 firmware
+-   4 FSR sensors
+-   DS18B20 sensor
+-   Wi-Fi communication
+-   FastAPI backend
+-   Random Forest prediction
+-   SQLite storage
+-   Streamlit dashboard
+
+## System Architecture
+
+``` text
+FSR + Temperature
+        |
+      ESP32
+        |
+   HTTP POST
+        |
+     FastAPI
+        |
+ Random Forest
+        |
+     SQLite
+        |
+    Streamlit
 ```
 
-##  Repository Structure
+## Workflow
 
-```text
-Smart-Footwear-Ulcer-Detection/
-│── Hardware/
-│── Firmware/
-│── Machine_Learning/
-│── Documentation/
-│── Images/
-└── README.md
+``` text
+Read Sensors
+   |
+Average Values
+   |
+Send JSON
+   |
+Predict Risk
+   |
+Store Data
+   |
+Display Dashboard
 ```
 
-##  Applications
+## Machine Learning Pipeline
 
-* Diabetic Foot Monitoring
-* Preventive Healthcare
-* Wearable Medical Devices
-* Hospitals & Clinics
-* Elderly Patient Care
+``` text
+Dataset -> Cleaning -> Training -> Random Forest -> model.pkl -> Prediction
+```
 
-##  Future Enhancements
+## Hardware Components
 
-* Bluetooth Low Energy (BLE)
-* Mobile Application
-* Cloud Data Storage
-* AI-based Personalized Health Monitoring
-* Gait Analysis
-* Doctor Dashboard
+-   ESP32
+-   4× FSR Sensors
+-   DS18B20
+-   4×10kΩ Resistors
+-   4.7kΩ Pull-up Resistor
 
-##  Status
+## Software Stack
 
- **Project Under Development**
+-   Arduino IDE
+-   Python
+-   FastAPI
+-   Streamlit
+-   SQLite
+-   scikit-learn
+-   Pandas
 
+## Pin Configuration
+
+  ESP32    Component
+  -------- -----------
+  GPIO34   FSR1
+  GPIO36   FSR2
+  GPIO32   FSR3
+  GPIO33   FSR4
+  GPIO4    DS18B20
+
+## Project Structure
+
+``` text
+Hardware/
+firmware/
+README.md
+main.py
+app.py
+model.pkl
+dataset.csv
+requirements.txt
+```
+
+## Installation
+
+1.  Clone repository.
+2.  Install requirements.
+3.  Upload firmware.
+4.  Run FastAPI.
+5.  Run Streamlit.
+
+## API Flow
+
+``` text
+ESP32 -> FastAPI -> Random Forest -> Database -> Dashboard
+```
+
+## Future Scope
+
+-   Mobile app
+-   Cloud support
+-   Alerts
+-   Doctor portal
+-   More sensors
+
+## Contributors
+
+Dhanush S
+
+## License
+
+MIT
