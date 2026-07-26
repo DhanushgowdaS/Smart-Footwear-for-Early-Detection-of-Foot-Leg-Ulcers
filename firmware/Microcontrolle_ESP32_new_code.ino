@@ -1,151 +1,152 @@
 #include <WiFi.h>
-#include <esp_now.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
 
-// ---------------- Motor Pins ----------------
-#define ENA 25
-#define ENB 26
+// ==========================
+// WiFi Credentials
+// ==========================
+const char* ssid = "Dhanu";
+const char* password = "Dhanu...";
+const char* serverUrl = "https://smart-footwear-api.onrender.com/log";
 
-#define IN1 32
-#define IN2 23
-#define IN3 33
-#define IN4 22
+// ==========================
+// Variables
+// ==========================
+int sampleCount = 0;
 
-// Speed (0 - 255)
-int motorSpeed = 255;
+float sumFSR1 = 0;
+float sumFSR2 = 0;
+float sumFSR3 = 0;
+float sumFSR4 = 0;
+float sumTemp1 = 0;
 
-// Structure
-typedef struct struct_message {
-  char command;
-} struct_message;
+unsigned long startTime = 0;
 
-struct_message receiveData;
-
-// ---------------- Motor Functions ----------------
-
-void stopMotor() {
-
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
-
-  Serial.println("STOP");
-}
-
-void backward() {
-
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-
-  Serial.println("FORWARD");
-}
-
-void forward() {
-
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
-
-  Serial.println("BACKWARD");
-}
-
-void right() {
-
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
-
-  Serial.println("RIGHT");
-}
-
-void left() {
-
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-
-  Serial.println("LEFT");
-}
-
-// ---------------- ESP-NOW Callback ----------------
-
-void OnDataRecv(const esp_now_recv_info_t *info,
-                const uint8_t *incomingData,
-                int len) {
-
-  memcpy(&receiveData, incomingData, sizeof(receiveData));
-
-  switch(receiveData.command) {
-
-    case 'F':
-      forward();
-      break;
-
-    case 'B':
-      backward();
-      break;
-
-    case 'L':
-      left();
-      break;
-
-    case 'R':
-      right();
-      break;
-
-    case 'S':
-      stopMotor();
-      break;
-
-    default:
-      stopMotor();
-      break;
-  }
-}
-
+// ==========================
+// Setup
+// ==========================
 void setup() {
-
   Serial.begin(115200);
 
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
+  WiFi.begin(ssid, password);
 
-  stopMotor();
+  Serial.print("Connecting to WiFi");
 
-  // PWM
-  ledcAttach(ENA, 1000, 8);
-  ledcAttach(ENB, 1000, 8);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
 
-  ledcWrite(ENA, motorSpeed);
-  ledcWrite(ENB, motorSpeed);
+  Serial.println();
+  Serial.println("WiFi Connected");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
 
-  WiFi.mode(WIFI_STA);
+  startTime = millis();
+}
 
-  if (esp_now_init() != ESP_OK) {
+// ==========================
+// Main Loop
+// ==========================
+void loop() {
 
-    Serial.println("ESP-NOW Init Failed");
+  // Replace these with your actual sensor readings
+  sumFSR1 += analogRead(34);
+  sumFSR2 += analogRead(36);
+  sumFSR3 += analogRead(32);
+  sumFSR4 += analogRead(33);
+
+  // Replace with actual temperature sensor
+  sumTemp1 += 29.25;
+
+  sampleCount++;
+
+  if (millis() - startTime >= 10000) {
+
+    float avgFSR1 = sumFSR1 / sampleCount;
+    float avgFSR2 = sumFSR2 / sampleCount;
+    float avgFSR3 = sumFSR3 / sampleCount;
+    float avgFSR4 = sumFSR4 / sampleCount;
+    float avgTemp1 = sumTemp1 / sampleCount;
+
+    Serial.println();
+    Serial.println("==============================");
+    Serial.println("Sending Averaged Sensor Data");
+    Serial.println("==============================");
+
+    Serial.printf("FSR1 : %.2f\n", avgFSR1);
+    Serial.printf("FSR2 : %.2f\n", avgFSR2);
+    Serial.printf("FSR3 : %.2f\n", avgFSR3);
+    Serial.printf("FSR4 : %.2f\n", avgFSR4);
+    Serial.printf("TEMP : %.2f\n", avgTemp1);
+
+    sendData(avgFSR1, avgFSR2, avgFSR3, avgFSR4, avgTemp1);
+
+    // Reset
+    sumFSR1 = 0;
+    sumFSR2 = 0;
+    sumFSR3 = 0;
+    sumFSR4 = 0;
+    sumTemp1 = 0;
+
+    sampleCount = 0;
+    startTime = millis();
+  }
+
+  delay(100);
+}
+
+// ==========================
+// Send Data
+// ==========================
+void sendData(float f1, float f2, float f3, float f4, float t1) {
+
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi Disconnected");
     return;
   }
 
-  esp_now_register_recv_cb(OnDataRecv);
+  HTTPClient http;
 
-  Serial.println("==================================");
-  Serial.println("Wheelchair Ready");
-  Serial.println("==================================");
-}
+  http.begin(serverUrl);
+  http.addHeader("Content-Type", "application/json");
 
-void loop() {
+  StaticJsonDocument<256> doc;
 
+  // REQUIRED by FastAPI
+  doc["scenario"] = "Walking";
+
+  doc["fsr1"] = f1;
+  doc["fsr2"] = f2;
+  doc["fsr3"] = f3;
+  doc["fsr4"] = f4;
+  doc["temp1"] = t1;
+
+  String jsonData;
+  serializeJson(doc, jsonData);
+
+  Serial.println();
+  Serial.println("JSON Sent:");
+  Serial.println(jsonData);
+
+  int httpResponseCode = http.POST(jsonData);
+
+  Serial.print("HTTP Response Code: ");
+  Serial.println(httpResponseCode);
+
+  if (httpResponseCode > 0) {
+
+    String response = http.getString();
+
+    Serial.println("Server Response:");
+    Serial.println(response);
+
+  } else {
+
+    Serial.print("POST Failed: ");
+    Serial.println(http.errorToString(httpResponseCode));
+
+  }
+
+  http.end();
 }
